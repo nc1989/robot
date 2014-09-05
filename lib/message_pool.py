@@ -15,3 +15,6 @@ class MessagePool(object):
 
     def iterids(self):
         return self.msg.iterkeys()
+
+    def size(self):
+        return sum(len(v) for v in self.msg.itervalues())

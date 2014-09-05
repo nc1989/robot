@@ -7,6 +7,8 @@ import logging
 from lib.message import *
 from lib.message_pool import MessagePool
 
+MSG_POST_URL = 'http://192.168.217.190:8000/robot/publish_msg_2_node'
+
 
 class Robot(object):
     def __init__(self, id, host, port):
@@ -119,11 +121,20 @@ class Robot(object):
         #三分钟内收到过alive消息认为该qq状态是alive
         return (time.time() - self.last_active) < 180
 
+    def update_msg_number(self):
+        #通知web，有好友、群消息数目有更新
+        data = {
+            'qq': self.id,
+            'fmsgn': self.friend_msg_pool.size(),
+            'gmsgn': self.group_msg_pool.size(),
+        }
+        requests.post(MSG_POST_URL, data=data)
+
     def friend_msg_handler(self, msg):
         logging.debug('QQ: %s, 收到好友<%s(%s)>的消息: %s',
                       self.id, msg.nickname, msg.sender, msg.content)
         self.friend_msg_pool.add(msg.sender, msg)
-        #TODO: 通知web，有好友消息
+        self.update_msg_number()
 
     def group_msg_handler(self, msg):
         logging.debug('QQ: %s, 收到群<%s(%s)>中<%s(%s)>发的消息: %s',
@@ -133,7 +144,8 @@ class Robot(object):
             if msg.content.find(kw) >= 0:
                 logging.info("命中kw!!!")
                 self.group_msg_pool.add(msg.group, msg)
-                #TODO: 通知web，有群消息
+                self.update_msg_number()
+                break
 
     def alive_msg_handler(self, msg):
         self._update_status()
@@ -159,6 +171,7 @@ class Robot(object):
             for m in msgs:
                 d['msg'].append({'time': m.time, 'content': m.content})
             ret['msg'].append(d)
+        self.update_msg_number()
         return ret
 
     def get_group_msg(self):
@@ -178,6 +191,7 @@ class Robot(object):
             for m in msgs:
                 d['msg'].append({'time': m.time, 'content': m.content})
             ret['msg'].append(d)
+        self.update_msg_number()
         return ret
 
 if __name__ == '__main__':
