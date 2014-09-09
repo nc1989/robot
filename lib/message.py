@@ -30,8 +30,3 @@ class GroupMessage(object):
         self.nickname = nickname
         self.content = content
 
-class SentGroupMessage(object):
-    def __init__(self, sender, group, content):
-        self.sender = sender
-        self.group = group
-        self.content = content

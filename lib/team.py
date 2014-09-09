@@ -1,23 +1,44 @@
 #-*- coding:utf8 -*-
 
-import Queue
 import logging
 import random
 import time
+import sys
 from threading import Thread
+
+
+class SendMessage(object):
+    def __init__(self, sender, content, timestamp=sys.maxint):
+        self.sender = sender
+        self.content = content
+        self.active = False
+        self.timestamp = timestamp
 
 
 class Team(object):
     def __init__(self, mgr, m1, m2, groups, tasks, group_delay, reply_delay):
         self.mgr = mgr
         self.members = (m1, m2)
-        self.group_tasks = {}
-        for g in groups:
-            self.group_tasks[g] = tasks
-        self.queue = Queue.Queue(20)
-        self.group_delay = group_delay
-        self.reply_delay = reply_delay
+        self.group_msg_queue = self.gen_msg_queue(groups, tasks, group_delay,
+                                                  reply_delay)
+        self.role_map = {'A': m1, 'B': m2}
         self.last_send_time = 0
+
+    def gen_msg_queue(self, groups, tasks, group_delay, reply_delay):
+        ret = {g: [] for g in groups}
+        g_start_time = int(time.time())  # short for group start time
+        for g in groups:
+            timestamp = g_start_time
+            for t in tasks:
+                if t['qq'] not in ('A', 'B'):
+                    continue
+                ret[g].append(SendMessage(t['qq'], t['content'], timestamp))
+                timestamp += random.randint(reply_delay)
+            g_start_time += random.randint(group_delay)
+
+        #激活所有group中的第一条消息
+        for msgs in ret.itervalues():
+            msgs[0].active = True
 
     def in_team(self, qq1, qq2):
         qqs = (self.members[0].id, self.members[1].id)
@@ -25,13 +46,6 @@ class Team(object):
             return True
         else:
             return False
-
-    def send_group_msg(self, gid, task):
-        for m in self.members:
-            if int(task['qq']) == m.id:
-                m.send_group_msg(gid, task['content'])
-                return 0
-        return 1
 
     def start(self):
         th = Thread(target=self.run)
@@ -42,36 +56,30 @@ class Team(object):
         self.mgr.dismiss_team(self)
 
     def recv_msg(self, qq, msg):
+        u""" 收到一条群消息，如果是任务队列的上一条消息，激活下一条 """
         logging.info("team message: %s, %s", qq, msg.content)
-        self.queue.put((qq, msg))
-
-    def send_first_msg(self):
-        items = self.group_tasks.items()
-        gid, tasks = items[0]
-        self.send_group_msg(gid, tasks[0])
-
-        for gid, tasks in items[1:]:
-            time.sleep(random.randint(*self.group_delay))
-            self.send_group_msg(gid, tasks[0])
-
-    def reply(self, qq, msg):
         group = msg.group
-        if group not in self.group_tasks:
+        self.group_msg_queue[group].pop(0)
+        if not self.group_msg_queue[group]:
+            del self.group_msg_queue[group]
             return
-        if msg.sender == self.group_tasks[group][0]['qq']:
-            #收到的消息的发送者就是上一个任务的发送者，进行回复处理
-            task = self.group_tasks[group].pop(0)
-            if not self.group_tasks[group]:
-                del self.group_tasks[group]
-                return
-            time.sleep(random.randint(*self.reply_delay))
-            self.send_group_msg(group, self.group_tasks[group][0])
-        else:
-            logging.debug("收到其他群消息：%s, %s", msg.sender, msg.content)
+        self.group_msg_queue[group][0].active = True
+
+    def reply(self):
+        u""" 找到一条已激活且timestamp在当前时间之前的消息，发送 """
+        try:
+            gid, msg = None
+            for g, msgs in self.group_msg_queue.iteritems():
+                if msgs[0].active and msg[0].timestamp <= time.time():
+                    gid, msg = g, msgs[0]
+                    break
+            self.role_map[msg.sender].send_group_msg(gid, msg.content)
+        except:
+            pass
 
     def finished(self):
-        for tasks in self.group_tasks.itervalues():
-            if tasks:
+        for msgs in self.group_msg_queue.itervalues():
+            if msgs:
                 return False
         return True
 
@@ -79,11 +87,11 @@ class Team(object):
         try:
             self.send_first_msg()
             while True:
-                qq, msg = self.queue.get()
-                self.reply(qq, msg)
+                self.reply()
                 if self.finished():
                     logging.info('Team %s,%s job finished', self.members[0].id,
                                  self.members[1].id)
                     break
+                time.sleep(3)
         finally:
             self.dismiss()
