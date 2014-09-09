@@ -270,6 +270,10 @@ class RobotManager(object):
             ret.append(d)
         return ret
 
+    def get_teams(self, data):
+        ret = [{'qq1':t.members[0].id, 'qq2':t.members[1].id}
+               for t in self.teams]
+        return ret
 
 if __name__ == '__main__':
     #设置log输出文件名、格式
