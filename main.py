@@ -104,8 +104,8 @@ class RobotManager(object):
     @check_qq
     def send_friends_msg(self, data):
         qq = int(data.get('qq', None))
-        delay_min = data.get('delay_min', 3)
-        delay_max = data.get('delay_max', 9)
+        delay_min = int(data.get('delay_min', 3))
+        delay_max = int(data.get('delay_max', 9))
         msg = data.get('msg', None)
         if msg:
             self.robot_pool[qq].send_friends_msg(msg, (delay_min, delay_max))
@@ -129,8 +129,8 @@ class RobotManager(object):
     @check_qq
     def send_groups_msg(self, data):
         qq = int(data.get('qq', None))
-        delay_min = data.get('delay_min', 6)
-        delay_max = data.get('delay_max', 18)
+        delay_min = int(data.get('delay_min', 6))
+        delay_max = int(data.get('delay_max', 18))
         msg = data.get('msg', None)
         msgs = data.get('msgs', None)
         if msgs:
@@ -224,10 +224,10 @@ class RobotManager(object):
         tasks = json.loads(data.get('tasks', '[]'))
         if not tasks:
             return 1, "empty tasks"
-        group_delay = (data.get('group_delay_min', 20),
-                       data.get('group_delay_min', 40))
-        reply_delay = (data.get('group_delay_min', 10),
-                       data.get('group_delay_min', 20))
+        group_delay = (int(data.get('group_delay_min', 20)),
+                       int(data.get('group_delay_min', 40)))
+        reply_delay = (int(data.get('group_delay_min', 10)),
+                       int(data.get('group_delay_min', 20)))
         qq1 = self.robot_pool[qq1]
         qq2 = self.robot_pool[qq2]
         t = Team(self, qq1, qq2, groups, tasks, group_delay, reply_delay)
