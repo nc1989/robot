@@ -33,12 +33,13 @@ class Team(object):
                 if t['qq'] not in ('A', 'B'):
                     continue
                 ret[g].append(SendMessage(t['qq'], t['content'], timestamp))
-                timestamp += random.randint(reply_delay)
-            g_start_time += random.randint(group_delay)
+                timestamp += random.randint(*reply_delay)
+            g_start_time += random.randint(*group_delay)
 
         #激活所有group中的第一条消息
         for msgs in ret.itervalues():
             msgs[0].active = True
+        return ret
 
     def in_team(self, qq1, qq2):
         qqs = (self.members[0].id, self.members[1].id)
@@ -68,12 +69,13 @@ class Team(object):
     def reply(self):
         u""" 找到一条已激活且timestamp在当前时间之前的消息，发送 """
         try:
-            gid, msg = None
+            gid, msg = None, None
             for g, msgs in self.group_msg_queue.iteritems():
-                if msgs[0].active and msg[0].timestamp <= time.time():
+                if msgs[0].active and msgs[0].timestamp <= time.time():
                     gid, msg = g, msgs[0]
                     break
-            self.role_map[msg.sender].send_group_msg(gid, msg.content)
+            if gid and msg:
+                self.role_map[msg.sender].send_group_msg(gid, msg.content)
         except:
             pass
 
@@ -85,7 +87,6 @@ class Team(object):
 
     def run(self):
         try:
-            self.send_first_msg()
             while True:
                 self.reply()
                 if self.finished():
