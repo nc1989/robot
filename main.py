@@ -137,7 +137,7 @@ class RobotManager(object):
         delay_max = int(data.get('delay_max', 40))
         msg = data.get('msg', None)
         msgs = data.get('msgs', None)
-        gids = data.get_msg('gids', None)
+        gids = data.get('gids', None)
         if gids:
             gids = gids.split(',')
         if msgs:
