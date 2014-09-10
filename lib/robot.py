@@ -89,20 +89,38 @@ class Robot(object):
         logging.debug("SEND GROUP MSG TO: %s", url)
         requests.get(url)
 
-    def send_friends_msg(self, msg, delay_range):
-        for fid, _, _ in self.friends:
+    def _do_send_friends_msg(self, msg, fids, delay_range):
+        if not fids:
+            fids = [f[0] for f in self.friends]
+
+        for fid in fids:
             self.send_friend_msg(fid, msg)
             time.sleep(random.randint(*delay_range))
 
-    def send_groups_msg(self, msg, delay_range):
+    def send_friends_msg(self, msg, fids, delay_range):
+        th = Thread(target=self._do_send_friends_msg,
+                    args=(msg, fids, delay_range))
+        th.setDaemon(True)
+        th.start()
+
+    def _do_send_groups_msg(self, msg, gids, delay_range):
+        if not gids:
+            gids = [g for g in self.groups.iterkeys()]
+
         if isinstance(msg, list):
-            for gid in self.groups.iterkeys():
+            for gid in gids:
                 self.send_group_msg(gid, random.choice(msg))
                 time.sleep(random.randint(*delay_range))
         else:
-            for gid in self.groups.iterkeys():
+            for gid in gids:
                 self.send_group_msg(gid, msg)
                 time.sleep(random.randint(*delay_range))
+
+    def send_groups_msg(self, msg, gids, delay_range):
+        th = Thread(target=self._do_send_groups_msg,
+                    args=(msg, gids, delay_range))
+        th.setDaemon(True)
+        th.start()
 
     def set_keywords(self, kwl):
         self.kwl = kwl

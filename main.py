@@ -107,8 +107,12 @@ class RobotManager(object):
         delay_min = int(data.get('delay_min', 3))
         delay_max = int(data.get('delay_max', 9))
         msg = data.get('msg', None)
+        fids = data.get('fids', None)
+        if fids:
+            fids = fids.split(',')
         if msg:
-            self.robot_pool[qq].send_friends_msg(msg, (delay_min, delay_max))
+            self.robot_pool[qq].send_friends_msg(msg, fids,
+                                                 (delay_min, delay_max))
             return 0
         else:
             logging.warning("msg is empty")
@@ -129,16 +133,21 @@ class RobotManager(object):
     @check_qq
     def send_groups_msg(self, data):
         qq = int(data.get('qq', None))
-        delay_min = int(data.get('delay_min', 6))
-        delay_max = int(data.get('delay_max', 18))
+        delay_min = int(data.get('delay_min', 20))
+        delay_max = int(data.get('delay_max', 40))
         msg = data.get('msg', None)
         msgs = data.get('msgs', None)
+        gids = data.get_msg('gids', None)
+        if gids:
+            gids = gids.split(',')
         if msgs:
             msgs = msgs.split(',')
-            self.robot_pool[qq].send_groups_msg(msgs, (delay_min, delay_max))
+            self.robot_pool[qq].send_groups_msg(msgs, gids,
+                                                (delay_min, delay_max))
             return 0
         elif msg:
-            self.robot_pool[qq].send_groups_msg(msg, (delay_min, delay_max))
+            self.robot_pool[qq].send_groups_msg(msg, gids,
+                                                (delay_min, delay_max))
             return 0
         else:
             logging.warning("msg is empty")
@@ -148,9 +157,12 @@ class RobotManager(object):
         qqs = data.get('qqs', '')
         kws = data.get('kws', '')
         logging.debug('set keywords: %s for: %s', kws, qqs)
-        if qqs == '' or kws == '':
-            return 1, "qqs or kws is empty"
-        kwl = kws.split(',')
+        if qqs == '':
+            return 1, "qqs is empty"
+        if kws:
+            kwl = kws.split(',')
+        else:
+            kwl = []
         qq_list = qqs.split(',')
         for qq in qq_list:
             if not qq.isdigit():
