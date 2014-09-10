@@ -201,14 +201,15 @@ class Robot(object):
             if not msgs:
                 continue
             d = {
-                'sender': msgs[0].sender,
-                'nick': msgs[0].nickname,
+                #'sender': msgs[0].sender,
+                #'nick': msgs[0].nickname,
                 'group': msgs[0].group,
                 'groupname': msgs[0].groupname,
                 'msg': [],
             }
             for m in msgs:
-                d['msg'].append({'time': m.time, 'content': m.content})
+                d['msg'].append({'time': m.time, 'content': m.content,
+                                 'sender': m.sender, 'nick': m.nickname})
             ret['msg'].append(d)
         self.update_msg_number()
         return ret
