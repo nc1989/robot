@@ -237,9 +237,9 @@ class RobotManager(object):
         if not tasks:
             return 1, "empty tasks"
         group_delay = (int(data.get('group_delay_min', 20)),
-                       int(data.get('group_delay_min', 40)))
+                       int(data.get('group_delay_max', 40)))
         reply_delay = (int(data.get('reply_delay_min', 10)),
-                       int(data.get('reply_delay_min', 20)))
+                       int(data.get('reply_delay_max', 20)))
         qq1 = self.robot_pool[qq1]
         qq2 = self.robot_pool[qq2]
         t = Team(self, qq1, qq2, groups, tasks, group_delay, reply_delay)
