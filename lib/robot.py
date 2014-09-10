@@ -6,6 +6,7 @@ import random
 import logging
 from lib.message import *
 from lib.message_pool import MessagePool
+from threading import Thread
 
 MSG_POST_URL = 'http://192.168.217.190:8000/robot/publish_msg_2_node'
 
