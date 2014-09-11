@@ -238,8 +238,8 @@ class RobotManager(object):
            qq2 not in self.robot_pool:
             return 1, "some one qq not in robot pool"
 
-         if self.in_team(qq1) or self.in_team(qq2):
-             return 1, "at least one qq already in a team"
+        if self.in_team(qq1) or self.in_team(qq2):
+            return 1, "at least one qq already in a team"
         tasks = json.loads(data.get('tasks', '[]'))
         if not tasks:
             return 1, "empty tasks"
