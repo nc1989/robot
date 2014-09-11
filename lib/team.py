@@ -42,12 +42,15 @@ class Team(object):
             msgs[0].active = True
         return ret
 
-    def in_team(self, qq1, qq2):
+    def is_team(self, qq1, qq2):
         qqs = (self.members[0].id, self.members[1].id)
         if qqs == (qq1, qq2) or qqs == (qq2, qq1):
             return True
         else:
             return False
+
+    def in_team(self, qq):
+        return qq in (self.members[0].id, self.members[1].id)
 
     def start(self):
         th = Thread(target=self.run)
