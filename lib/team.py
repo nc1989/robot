@@ -6,6 +6,7 @@ import time
 import sys
 from threading import Thread
 
+G_MSG_DELAY = 10
 
 class SendMessage(object):
     def __init__(self, sender, content, timestamp=sys.maxint):
@@ -74,8 +75,9 @@ class Team(object):
                 if msgs[0].active and msgs[0].timestamp <= time.time():
                     gid, msg = g, msgs[0]
                     break
-            if gid and msg:
+            if gid and msg and self.last_send_time + G_MSG_DELAY < time.time():
                 self.role_map[msg.sender].send_group_msg(gid, msg.content)
+                self.last_send_time = time.time()
         except:
             pass
 
