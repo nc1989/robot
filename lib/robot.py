@@ -115,9 +115,6 @@ class Robot(object):
         th.start()
 
     def _do_send_groups_msg(self, msgs, gids, delay_range):
-        if not gids:
-            gids = [g for g in self.groups.iterkeys()]
-
         for gid in gids:
             self.send_group_msg(gid, random.choice(msgs))
             time.sleep(random.randint(*delay_range))

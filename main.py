@@ -151,11 +151,11 @@ class RobotManager(object):
 
         conflict_qqs = data.get('conflict_qqs', [])
         if conflict_qqs:
-            conflict_qqs = conflict_qqs.split(',')
+            conflict_qqs = [int(q) for q in conflict_qqs.split(',')]
             conflict_groups = set()
             for q in conflict_qqs:
                 if q in self.robot_pool:
-                    groups = self.robot_pool[qq].get_groups()
+                    groups = self.robot_pool[q].get_groups()
                     conflict_groups = conflict_groups.union(groups)
             gids = [g for g in gids if g not in conflict_groups]
 
