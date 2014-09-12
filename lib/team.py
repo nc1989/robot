@@ -66,8 +66,16 @@ class Team(object):
         group = msg.group
         if group not in self.group_msg_queue:
             return
-        if msg.content != self.group_msg_queue[group][0].content:
+
+        msg_expect = self.group_msg_queue[group][0].content
+        msg_recv = msg.content
+        if isinstance(msg_expect, unicode):
+            msg_expect = msg_expect.encode('utf8')
+        if isinstance(msg_recv, unicode):
+            msg_recv = msg_recv.encode('utf8')
+        if msg_expect != msg_recv:
             return
+
         self.group_msg_queue[group].pop(0)
         if not self.group_msg_queue[group]:
             del self.group_msg_queue[group]
