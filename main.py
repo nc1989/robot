@@ -294,9 +294,10 @@ class RobotManager(object):
                 if len(grps) > len(groups):
                     groups = grps
                     index = i
+            qq2 = qqs.pop(index)
             d = {
                 'qq1': qq1,
-                'qq2': qqs.pop(index),
+                'qq2': qq2,
                 'nick1': self.robot_pool[qq1].nickname,
                 'nick2': self.robot_pool[qq2].nickname,
                 'groups': groups,
