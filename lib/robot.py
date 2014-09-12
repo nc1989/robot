@@ -16,10 +16,6 @@ class Robot(object):
         self.id = id
         self.url = "http://{0}/qqplus{1}/?key=abc123&a=<%26%26>".format(
             host, port)
-        self.nickname = self._get_nickname()
-        self.groups = self._get_groups()
-        self.friends = self._get_friends()
-        self.last_active = time.time()
         self.msg_handlers = {
             FriendMessage: self.friend_msg_handler,
             GroupMessage: self.group_msg_handler,
@@ -28,7 +24,21 @@ class Robot(object):
         }
         self.friend_msg_pool = MessagePool()  # TODO:设定大小
         self.group_msg_pool = MessagePool()  # TODO:设定大小
+        self.nickname = None
+        self.groups = {}
+        self.friends = []
+        self.last_active = 0
         self.kwl = []
+        self.init()
+
+    def init(self):
+        try:
+            self.nickname = self._get_nickname()
+            self.groups = self._get_groups()
+            self.friends = self._get_friends()
+            self.last_active = time.time()
+        except:
+            pass
 
     def _get_friends(self):
         url = "{0}<%26%26>GetFriends".format(self.url)
@@ -104,22 +114,17 @@ class Robot(object):
         th.setDaemon(True)
         th.start()
 
-    def _do_send_groups_msg(self, msg, gids, delay_range):
+    def _do_send_groups_msg(self, msgs, gids, delay_range):
         if not gids:
             gids = [g for g in self.groups.iterkeys()]
 
-        if isinstance(msg, list):
-            for gid in gids:
-                self.send_group_msg(gid, random.choice(msg))
-                time.sleep(random.randint(*delay_range))
-        else:
-            for gid in gids:
-                self.send_group_msg(gid, msg)
-                time.sleep(random.randint(*delay_range))
+        for gid in gids:
+            self.send_group_msg(gid, random.choice(msgs))
+            time.sleep(random.randint(*delay_range))
 
-    def send_groups_msg(self, msg, gids, delay_range):
+    def send_groups_msg(self, msgs, gids, delay_range):
         th = Thread(target=self._do_send_groups_msg,
-                    args=(msg, gids, delay_range))
+                    args=(msgs, gids, delay_range))
         th.setDaemon(True)
         th.start()
 
@@ -139,6 +144,10 @@ class Robot(object):
     def isalive(self):
         #三分钟内收到过alive消息认为该qq状态是alive
         return (time.time() - self.last_active) < 180
+
+    def get_groups(self):
+        u""" 返回该qq的group id list """
+        return self.groups.keys()
 
     def update_msg_number(self):
         #通知web，有好友、群消息数目有更新

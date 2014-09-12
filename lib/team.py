@@ -64,6 +64,10 @@ class Team(object):
         u""" 收到一条群消息，如果是任务队列的上一条消息，激活下一条 """
         logging.info("team message: %s, %s", qq, msg.content)
         group = msg.group
+        if group not in self.group_msg_queue:
+            return
+        if msg.content != self.group_msg_queue[group][0].content:
+            return
         self.group_msg_queue[group].pop(0)
         if not self.group_msg_queue[group]:
             del self.group_msg_queue[group]

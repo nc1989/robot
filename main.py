@@ -17,11 +17,14 @@ from lib.team import Team
 def check_qq(func):
     def new_func(self, data):
         qq = int(data.get('qq', None))
-        if qq in self.robot_pool:
-            return func(self, data)
-        else:
+        if qq not in self.robot_pool:
             logging.warning("QQ %s not in robot pool!", qq)
             return 1, "QQ %s not in robot pool!" % qq
+        elif not self.robot_pool[qq].isalive():
+            logging.warning("QQ %s is not alive!", qq)
+            return 1, "QQ %s is not alive!" % qq
+        else:
+            return func(self, data)
     return new_func
 
 
@@ -139,18 +142,26 @@ class RobotManager(object):
         qq = int(data.get('qq', None))
         delay_min = int(data.get('delay_min', 20))
         delay_max = int(data.get('delay_max', 40))
-        msg = data.get('msg', None)
         msgs = data.get('msgs', None)
         gids = data.get('gids', None)
         if gids:
             gids = gids.split(',')
+        else:
+            gids = self.robot_pool[qq].get_groups()
+
+        conflict_qqs = data.get('conflict_qqs', [])
+        if conflict_qqs:
+            conflict_qqs = conflict_qqs.split(',')
+            conflict_groups = set()
+            for q in conflict_qqs:
+                if q in self.robot_pool:
+                    groups = self.robot_pool[qq].get_groups()
+                    conflict_groups = conflict_groups.union(groups)
+            gids = [g for g in gids if g not in conflict_groups]
+
         if msgs:
             msgs = msgs.split(',')
             self.robot_pool[qq].send_groups_msg(msgs, gids,
-                                                (delay_min, delay_max))
-            return 0
-        elif msg:
-            self.robot_pool[qq].send_groups_msg(msg, gids,
                                                 (delay_min, delay_max))
             return 0
         else:
@@ -290,7 +301,7 @@ class RobotManager(object):
         return ret
 
     def get_teams(self, data):
-        ret = [{'qq1':t.members[0].id, 'qq2':t.members[1].id}
+        ret = [{'qq1': t.members[0].id, 'qq2': t.members[1].id}
                for t in self.teams]
         return ret
 
