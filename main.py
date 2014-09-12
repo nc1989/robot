@@ -297,6 +297,8 @@ class RobotManager(object):
             d = {
                 'qq1': qq1,
                 'qq2': qqs.pop(index),
+                'nick1': self.robot_pool[qq1].nickname,
+                'nick2': self.robot_pool[qq2].nickname,
                 'groups': groups,
             }
             ret.append(d)
