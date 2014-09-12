@@ -155,6 +155,8 @@ class RobotManager(object):
             conflict_groups = set()
             for q in conflict_qqs:
                 if q in self.robot_pool:
+                    if q == qq:
+                        continue
                     groups = self.robot_pool[q].get_groups()
                     conflict_groups = conflict_groups.union(groups)
             gids = [g for g in gids if g not in conflict_groups]
