@@ -65,6 +65,7 @@ class Team(object):
         logging.info("team message: %s, %s", qq, msg.content)
         group = msg.group
         if group not in self.group_msg_queue:
+            logging.warn("group %s not in group_msg_queue!", group)
             return
 
         msg_expect = self.group_msg_queue[group][0].content
@@ -74,6 +75,8 @@ class Team(object):
         if isinstance(msg_recv, unicode):
             msg_recv = msg_recv.encode('utf8')
         if msg_expect != msg_recv:
+            logging.warn("收到消息和期待消息不一致: %s != %s",
+                         msg_expect, msg_recv)
             return
 
         self.group_msg_queue[group].pop(0)

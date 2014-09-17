@@ -176,7 +176,7 @@ class Robot(object):
         self._update_status()
 
     def unknown_msg_handler(self, msg):
-        logging.dbug('报告大人，QQ: %s收到无法解析的三体人消息', self.id)
+        logging.debug('报告大人，QQ: %s收到无法解析的三体人消息', self.id)
 
     def recv_msg(self, msg):
         self.msg_handlers[msg.__class__](msg)
