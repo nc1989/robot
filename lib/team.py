@@ -104,7 +104,10 @@ class Team(object):
                    msgs[0].timestamp <= time.time():
                     gid, msg = g, msgs.pop(0)
                     break
-            if gid and msg and self.last_send_time + G_MSG_DELAY < time.time():
+            if gid and msg:
+                gap = self.last_send_time + G_MSG_DELAY - time.time()
+                if gap > 0:
+                    time.sleep(gap)
                 self.role_map[msg.sender].send_group_msg(gid, msg.content)
                 self.last_send_time = time.time()
         except:
