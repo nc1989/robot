@@ -88,6 +88,9 @@ class Team(object):
 
         self.group_msg_queue[group][0].pre_msg = None
 
+    def get_tasks():
+        return self.group_msg_queue
+
     def reply(self):
         u""" 找到一条已激活且timestamp在当前时间之前的消息，发送 """
         try:

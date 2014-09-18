@@ -306,7 +306,8 @@ class RobotManager(object):
         return ret
 
     def get_teams(self, data):
-        ret = [{'qq1': t.members[0].id, 'qq2': t.members[1].id}
+        ret = [{'qq1': t.members[0].id, 'qq2': t.members[1].id,
+                'tasks': t.get_tasks()}
                for t in self.teams]
         return ret
 

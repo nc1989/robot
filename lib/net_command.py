@@ -7,6 +7,10 @@ from bottle import Bottle, run, request, response, get, post
 app = Bottle()
 watcher = None
 
+class ObjectEncoder(json.JSONEncoder):
+    def default(self, o):
+        return o.__dict__
+
 
 def start(robot_mgr):
     global watcher
@@ -33,4 +37,4 @@ def dispatch():
         r = {"status": ret[0], "err_msg": ret[1]}
     else:
         r = {"status": 1, "err_msg": "unknown error!"}
-    return json.dumps(r)
+    return json.dumps(r, cls=ObjectEncoder)
