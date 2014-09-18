@@ -25,6 +25,7 @@ class Team(object):
                                                   reply_delay)
         self.role_map = {'A': m1, 'B': m2}
         self.last_send_time = 0
+        self.abort = False
 
     def gen_msg_queue(self, groups, tasks, group_delay, reply_delay):
         ret = {g: [] for g in groups}
@@ -88,15 +89,18 @@ class Team(object):
 
         self.group_msg_queue[group][0].pre_msg = None
 
-    def get_tasks():
+    def get_tasks(self):
         return self.group_msg_queue
+
+    def abort(self):
+        self.abort = True
 
     def reply(self):
         u""" 找到一条已激活且timestamp在当前时间之前的消息，发送 """
         try:
             gid, msg = None, None
             for g, msgs in self.group_msg_queue.iteritems():
-                if msgs[0].pre_msg is None and \
+                if msgs and msgs[0].pre_msg is None and \
                    msgs[0].timestamp <= time.time():
                     gid, msg = g, msgs.pop(0)
                     break
@@ -116,7 +120,11 @@ class Team(object):
         try:
             while True:
                 self.reply()
-                if self.finished():
+                if self.abort:
+                    logging.info('Team %s,%s job aborted', self.members[0].id,
+                                 self.members[1].id)
+                    break
+                elif self.finished():
                     logging.info('Team %s,%s job finished', self.members[0].id,
                                  self.members[1].id)
                     break
