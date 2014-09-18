@@ -41,7 +41,7 @@ class Team(object):
         #激活所有group中的第一条消息，设置所有消息的pre_msg
         for msgs in ret.itervalues():
             for idx, msg in enumerate(msgs):
-                if inx == 0:
+                if idx == 0:
                     continue
                 msg.pre_msg = msgs[idx - 1].content
         return ret
