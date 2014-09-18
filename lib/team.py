@@ -69,9 +69,12 @@ class Team(object):
         logging.info("team message: %s, %s", qq, msg.content)
         group = msg.group
         if group not in self.group_msg_queue:
-            logging.info("group %s 收到最后一条消息", group)
+            logging.warn("group %s not in group_msg_queue!", group)
             return
 
+        if not self.group_msg_queue[group]:
+            logging.info("group %s 收到最后一条消息", group)
+            return
         msg_expect = self.group_msg_queue[group][0].pre_msg
         msg_recv = msg.content
         if isinstance(msg_expect, unicode):
