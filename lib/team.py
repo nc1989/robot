@@ -8,11 +8,12 @@ from threading import Thread
 
 G_MSG_DELAY = 10
 
+
 class SendMessage(object):
     def __init__(self, sender, content, timestamp=sys.maxint):
+        self.pre_msg = None
         self.sender = sender
         self.content = content
-        self.active = False
         self.timestamp = timestamp
 
 
@@ -37,9 +38,12 @@ class Team(object):
                 timestamp += random.randint(*reply_delay)
             g_start_time += random.randint(*group_delay)
 
-        #激活所有group中的第一条消息
+        #激活所有group中的第一条消息，设置所有消息的pre_msg
         for msgs in ret.itervalues():
-            msgs[0].active = True
+            for idx, msg in enumerate(msgs):
+                if inx == 0:
+                    continue
+                msg.pre_msg = msgs[idx - 1].content
         return ret
 
     def is_team(self, qq1, qq2):
@@ -65,10 +69,10 @@ class Team(object):
         logging.info("team message: %s, %s", qq, msg.content)
         group = msg.group
         if group not in self.group_msg_queue:
-            logging.warn("group %s not in group_msg_queue!", group)
+            logging.info("group %s 收到最后一条消息", group)
             return
 
-        msg_expect = self.group_msg_queue[group][0].content
+        msg_expect = self.group_msg_queue[group][0].pre_msg
         msg_recv = msg.content
         if isinstance(msg_expect, unicode):
             msg_expect = msg_expect.encode('utf8')
@@ -79,19 +83,16 @@ class Team(object):
                          msg_expect, msg_recv)
             return
 
-        self.group_msg_queue[group].pop(0)
-        if not self.group_msg_queue[group]:
-            del self.group_msg_queue[group]
-            return
-        self.group_msg_queue[group][0].active = True
+        self.group_msg_queue[group][0].pre_msg = None
 
     def reply(self):
         u""" 找到一条已激活且timestamp在当前时间之前的消息，发送 """
         try:
             gid, msg = None, None
             for g, msgs in self.group_msg_queue.iteritems():
-                if msgs[0].active and msgs[0].timestamp <= time.time():
-                    gid, msg = g, msgs[0]
+                if msgs[0].pre_msg is None and \
+                   msgs[0].timestamp <= time.time():
+                    gid, msg = g, msgs.pop(0)
                     break
             if gid and msg and self.last_send_time + G_MSG_DELAY < time.time():
                 self.role_map[msg.sender].send_group_msg(gid, msg.content)
