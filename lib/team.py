@@ -67,8 +67,9 @@ class Team(object):
 
     def recv_msg(self, qq, msg):
         u""" 收到一条群消息，如果是任务队列的上一条消息，激活下一条 """
-        logging.info("team message: %s, %s", qq, msg.content)
         group = msg.group
+        logging.info("qq %s recv team message in group %s: %s",
+                     qq, group, msg.content)
         if group not in self.group_msg_queue:
             logging.warn("group %s not in group_msg_queue!", group)
             return
