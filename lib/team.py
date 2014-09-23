@@ -6,7 +6,7 @@ import time
 import sys
 from threading import Thread
 
-G_MSG_DELAY = 10
+G_MSG_DELAY = 1
 
 
 class SendMessage(object):
@@ -98,13 +98,15 @@ class Team(object):
     def reply(self):
         u""" 找到一条已激活且timestamp在当前时间之前的消息，发送 """
         try:
-            gid, msg = None, None
+            gid, msgs, min_timestamp = None, None, sys.maxint
             for g, msgs in self.group_msg_queue.iteritems():
                 if msgs and msgs[0].pre_msg is None and \
-                   msgs[0].timestamp <= time.time():
-                    gid, msg = g, msgs.pop(0)
-                    break
-            if gid and msg:
+                   msgs[0].timestamp <= time.time() and \
+                   msgs[0].timestamp <= min_timestamp:
+                    min_timestamp =  msgs[0].timestamp
+                    gid, msgs = g, msgs
+            if gid and msgs:
+                msg = msgs.pop(0)
                 gap = self.last_send_time + G_MSG_DELAY - time.time()
                 if gap > 0:
                     time.sleep(gap)
@@ -131,6 +133,6 @@ class Team(object):
                     logging.info('Team %s,%s job finished', self.members[0].id,
                                  self.members[1].id)
                     break
-                time.sleep(3)
+                time.sleep(1)
         finally:
             self.dismiss()
