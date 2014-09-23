@@ -6,7 +6,7 @@ import time
 import sys
 from threading import Thread
 
-G_MSG_DELAY = 1
+G_MSG_DELAY = 2
 
 
 class SendMessage(object):
