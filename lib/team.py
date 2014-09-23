@@ -98,15 +98,15 @@ class Team(object):
     def reply(self):
         u""" 找到一条已激活且timestamp在当前时间之前的消息，发送 """
         try:
-            gid, msgs, min_timestamp = None, None, sys.maxint
+            gid, msg_list, min_timestamp = None, None, sys.maxint
             for g, msgs in self.group_msg_queue.iteritems():
                 if msgs and msgs[0].pre_msg is None and \
                    msgs[0].timestamp <= time.time() and \
                    msgs[0].timestamp <= min_timestamp:
                     min_timestamp =  msgs[0].timestamp
-                    gid, msgs = g, msgs
-            if gid and msgs:
-                msg = msgs.pop(0)
+                    gid, msg_list = g, msgs
+            if gid and msg_list:
+                msg = msg_list.pop(0)
                 gap = self.last_send_time + G_MSG_DELAY - time.time()
                 if gap > 0:
                     time.sleep(gap)
